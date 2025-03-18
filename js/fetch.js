@@ -39,6 +39,10 @@ document.addEventListener("DOMContentLoaded", function() {
         };
   
         console.log("Gesammelte Formulardaten:", formData);
+
+        // Show processing alert
+        showAlert("Verarbeitung läuft...", "info", 0); // Duration 0 means it stays until removed
+
         fetch('http://localhost:5000/api/getInformation', {
             method: 'POST',
             headers: {
@@ -47,6 +51,15 @@ document.addEventListener("DOMContentLoaded", function() {
             body: JSON.stringify(formData)
         })
         .then(response => {
+            if (response.status === 503) {
+                // Process is busy
+                return response.json().then(data => {
+                    // Remove processing alert
+                    removeExistingAlerts('info');
+                    showAlert(data.message, "warning", 5000);
+                    throw new Error('Process busy');
+                });
+            }
             if (!response.ok) {
           throw new Error('Network response was not ok');
             }
@@ -54,12 +67,33 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(data => {
             console.log('Success:', data);
+            // Remove processing alert
+            removeExistingAlerts('info');
+            
+            if (data.status === "success") {
+                showAlert(data.result.message, "success", 3000);
+            } else if (data.error) {
+                showAlert(data.error, "warning", 3000);
+            }
         })
         .catch(error => {
-            console.error('Error:', error);
+            if (error.message !== 'Process busy') {
+                console.error('Error:', error);
+                // Remove processing alert
+                removeExistingAlerts('info');
+                showAlert("Ein Fehler ist aufgetreten: " + error.message, "warning", 3000);
+            }
         });
       });
     } else {
       console.error("sendButton nicht gefunden!");
     }
-  });  
+  });
+
+// Helper function to remove existing alerts of a specific type
+function removeExistingAlerts(type) {
+    const existingAlert = document.querySelector(`#alertsContainer .alert.${type}`);
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+}

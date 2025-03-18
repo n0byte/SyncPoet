@@ -1,113 +1,115 @@
-import flask
+from mode import single_mode, c2m_mode, m2c_mode, all_mode
+from datetime import datetime
 from flask_cors import CORS
+import threading
+import flask
 import json
 import os
-import atexit
-from mode import single_mode, c2m_mode, m2c_mode, all_mode
-import threading
 
+# Initialize Flask app
 app = flask.Flask(__name__)
 CORS(app)
 
+# Define paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 cache_dir = os.path.join(current_dir, "cache")
 jsoninput_dir = os.path.join(current_dir, "jsoninput.json")
 info_dir = os.path.join(current_dir, "information.json")
 
-def clear_json_files():
+# Create directories and files if they don't exist
+os.makedirs(cache_dir, exist_ok=True)
+
+# Create jsoninput.json with empty array if it doesn't exist
+if not os.path.exists(jsoninput_dir):
     with open(jsoninput_dir, 'w') as f:
-        json.dump([], f)
+        json.dump([], f, indent=4)
+
+# Create information.json with empty object if it doesn't exist
+if not os.path.exists(info_dir):
     with open(info_dir, 'w') as f:
-        json.dump({}, f)
+        json.dump({}, f, indent=4)
 
-def update_json_files():
-    while True:
-        try:
-            # Get current files in cache
-            cache_files = [f for f in os.listdir(cache_dir) if os.path.isfile(os.path.join(cache_dir, f))]
-            
-            # Read current JSON content
-            with open(jsoninput_dir, 'r') as f:
-                current_data = json.load(f)
-            
-            # Get existing filenames
-            existing_files = [item['filename'] for item in current_data if isinstance(item, dict)]
-            
-            # Add new files to JSON
-            for file in cache_files:
-                filename = os.path.splitext(file)[0]  # Remove extension
-                if filename not in existing_files:
-                    current_data.append({
-                        'filename': filename,
-                        'status': 'Clear'
-                    })
-            
-            # Write updated data
-            with open(jsoninput_dir, 'w') as f:
-                json.dump(current_data, f)
-                
-            threading.Event().wait(1.0)  # Check every second
-            
-        except Exception as e:
-            print(f"Error in file monitoring: {e}")
-            threading.Event().wait(5.0)  # Wait 5 seconds on error
-
-def init_files():
-    clear_json_files()
-    # Start file monitoring in background
-    monitor_thread = threading.Thread(target=update_json_files, daemon=True)
-    monitor_thread.start()
-
-atexit.register(clear_json_files)
-init_files()
-
-# Global lock for synchronization
-processing_lock = threading.Lock()
-is_processing = False
 
 # ==================== Writes the Information from the Frontend or the fetch in the Json File and then it reads the Json File to 
 # know the Mode that was written and then it executes the Funktion in the mode.py. The Funktion that get executed depens 
 # on the Mode in the Json. And it locks any Input bevor the funktion is finished, when the Funktion ist not done its blocks all request.
 # ==================== #
-@app.route('/api/writeInformation', methods=['POST'])
-def write_information():
-    global is_processing
-    if is_processing:
-        return flask.jsonify({"status": "busy", "message": "Another task is currently processing"}), 429
+# Lock for synchronizing requests
+request_lock = threading.Lock()
+
+process_status = {
+    "isRunning": False,
+    "currentProcess": None,
+    "startTime": None
+}
+
+@app.route('/api/getInformation', methods=['POST'])
+def getInformation():
+    global process_status
+    
+    # Check if process is already running
+    if process_status["isRunning"]:
+        return flask.jsonify({
+            "status": "busy",
+            "message": f"Process {process_status['currentProcess']} is running since {process_status['startTime']}",
+            "processId": process_status['currentProcess']
+        }), 503
+
+    # Check if we can acquire the lock
+    if not request_lock.acquire(blocking=False):
+        return flask.jsonify({
+            "status": "busy",
+            "message": "Another process is trying to start"
+        }), 503
 
     try:
+        # Get data from request
         data = flask.request.get_json()
-        if not data or 'mode' not in data:
-            return flask.jsonify({"status": "error", "message": "Invalid data format"}), 400
+        
+        # Update process status
+        process_status["isRunning"] = True
+        process_status["currentProcess"] = data.get('mode', 'unknown')
+        process_status["startTime"] = datetime.now().strftime("%H:%M:%S")
 
-        with processing_lock:
-            is_processing = True
-            # Write to information.json
-            with open(info_dir, 'w') as f:
-                json.dump(data, f)
+        # Write data to information.json
+        with open(info_dir, 'w') as f:
+            json.dump(data, f)
 
-            # Execute corresponding mode function
-            mode = data.get('mode')
-            try:
-                if mode == 'single':
-                    result = single_mode()
-                elif mode == 'c2m':
-                    result = c2m_mode()
-                elif mode == 'm2c':
-                    result = m2c_mode()
-                elif mode == 'all':
-                    result = all_mode()
-                else:
-                    return flask.jsonify({"status": "error", "message": "Invalid mode"}), 400
-                
-                return flask.jsonify({"status": "success", "result": result})
-            finally:
-                is_processing = False
+        # Execute corresponding function based on mode
+        mode = data.get('mode', '')
+        result = None
+        
+        if mode == 'single':
+            result = single_mode()
+        elif mode == 'c2m':
+            result = c2m_mode()
+        elif mode == 'm2c':
+            result = m2c_mode()
+        elif mode == 'all':
+            result = all_mode()
+        else:
+            return flask.jsonify({"error": "Invalid mode"}), 400
+
+        return flask.jsonify({
+            "status": "success",
+            "result": result,
+            "processDetails": {
+                "startTime": process_status["startTime"],
+                "endTime": datetime.now().strftime("%H:%M:%S")
+            }
+        })
 
     except Exception as e:
-        is_processing = False
-        return flask.jsonify({"status": "error", "message": str(e)}), 500
-    
+        return flask.jsonify({"error": str(e)}), 500
+
+    finally:
+        # Reset process status
+        process_status["isRunning"] = False
+        process_status["currentProcess"] = None
+        process_status["startTime"] = None
+        # Release the lock
+        request_lock.release()
+
 
 # ==================== Gives the Frontend the information about the files in the cache directory and their status ==================== #
 @app.route('/api/getSidebarinput', methods=['GET'])
@@ -125,6 +127,8 @@ def getjsoninput():
         return flask.jsonify(formatted_data)
     except (FileNotFoundError, json.JSONDecodeError):
         return flask.jsonify([])
+    
+
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
