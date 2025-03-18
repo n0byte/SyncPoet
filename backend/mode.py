@@ -69,6 +69,8 @@ def c2m_mode():
     crm_data = get_all_crm_data(date_value=date_value, custom_settings=settings)
     print("CRM mode data retrieved:")
     print(crm_data)
+    # POST Logic für MailPoet
+    
     
     # Kombiniere beide Ergebnisse in einem Dictionary
     return {
