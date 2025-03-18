@@ -44,7 +44,8 @@ print("\nAndere Modi Werte:")
 print(extract_other_mode_data())
 
 # ==================== Mode Logic ==================== #
-# Weitere Funktionsdefinitionen, die im Hauptprogramm zur Ausführung kommen:
+
+# ==================== Single Mode Logic ==================== #
 def single_mode():
     print("Processing single mode...")
     time.sleep(10)  # Simuliere Arbeit
@@ -54,6 +55,7 @@ def single_mode():
         "processId": "single"
     }
 
+# ==================== CRM Mode Logic ==================== #
 def c2m_mode():
     print("Processing c2m mode...")
     # Der Import erfolgt hier innerhalb der Funktion, um zirkuläre Importe zu vermeiden.
@@ -77,6 +79,7 @@ def c2m_mode():
     }
 
 
+# ==================== MailPoet Mode Logic ==================== #
 def m2c_mode():
     print("Processing m2c mode...")
     time.sleep(10)  # Simuliere Arbeit
@@ -86,6 +89,7 @@ def m2c_mode():
         "processId": "m2c"
     }
 
+# ==================== All Mode Logic ==================== #
 def all_mode():
     print("Processing all modes...")
     time.sleep(10)  # Simuliere Arbeit
