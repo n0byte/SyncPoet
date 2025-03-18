@@ -5,6 +5,7 @@ from config import read_json  # Neuer Import aus config.py
 import sys
 
 
+# ==================== Extract Logic ==================== #
 sys.stdout.reconfigure(encoding='utf-8')
 
 def extract_single_mode_data():
@@ -42,6 +43,7 @@ print(extract_single_mode_data())
 print("\nAndere Modi Werte:")
 print(extract_other_mode_data())
 
+# ==================== Mode Logic ==================== #
 # Weitere Funktionsdefinitionen, die im Hauptprogramm zur Ausführung kommen:
 def single_mode():
     print("Processing single mode...")
@@ -93,5 +95,5 @@ def all_mode():
         "processId": "all"
     }
 
-# Optional: Direkt beim Laden des Moduls den CRM Mode ausführen:
+# Optional (Test): Direkt beim Laden des Moduls den CRM Mode ausführen:
 #c2m_mode()
