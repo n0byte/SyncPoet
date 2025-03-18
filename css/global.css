@@ -1,0 +1,53 @@
+/* ====================== Root Variablen ====================== */
+:root {
+    --body-background: #f4f5f7;
+    --navbar-background: #F8F9FA;
+    --sidebar-background: #FAFAFA;
+    --modal-background: ;
+
+    --text-color: #2222;
+    --link-color: #0744ec;
+
+    --webkit-scrollbar-thumb-backround: #ddd;
+    --webkit-scrollbar-border: #fff;
+}
+
+
+/* ====================== Globales Styling ====================== */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap"); 
+@font-face {
+    font-family: 'SpaceMono';
+    src: url('assets/SpaceMono-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    background-color: var(--body-background);
+    font-family: "Outfit", sans-serif;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 225px;
+    grid-template-areas:
+      "navbar navbar"
+      "sidebar main";
+    overflow: hidden;
+}
+
+
+/* ====================== Global Scrollbar ====================== */
+* {
+	scrollbar-width: 0;
+}
+
+*::-webkit-scrollbar {
+	background-color: transparent;
+	width: 12px;
+}
+
+*::-webkit-scrollbar-thumb {
+	border-radius: 99px;
+	background-color: var(--webkit-scrollbar-thumb-backround);
+	border: 4px solid var(--webkit-scrollbar-border);
+}

@@ -1,0 +1,240 @@
+/* ====================== Modal ====================== */
+.modal button,
+.modal input,
+.modal select,
+.modal textarea {
+  font: inherit;
+}
+
+.modal a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.modal .btn-open {
+  display: inline-block;
+  padding: 12px 20px;
+  margin: 20px;
+  border-radius: 8px;
+  background-color: #750550;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.modal .btn-open:hover {
+  background-color: #4a0433;
+}
+
+/* Nur wenn Modal offen ist */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(5px);
+    padding: 0 16px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+  
+/* Klasse .open ermöglicht das Anzeigen */
+.modal.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.modal-container {
+    max-height: 90vh;
+    max-width: 1400px;
+    height: 100%;
+    background-color: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.25);
+    width: 100%;
+}
+
+.modal .modal-container-header {
+  padding: 16px 32px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal .modal-container-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.modal .modal-container-title svg {
+  width: 32px;
+  height: 32px;
+  color: #750550;
+}
+
+.modal .modal-container-body {
+  padding: 24px 32px 51px;
+  overflow-y: auto;
+}
+
+.modal .rtf h1,
+.modal .rtf h2,
+.modal .rtf h3,
+.modal .rtf h4,
+.modal .rtf h5,
+.modal .rtf h6 {
+  font-weight: 700;
+}
+
+.modal .rtf h1 {
+  font-size: 1.5rem;
+  line-height: 1.125;
+}
+
+.modal .rtf h2 {
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.modal .rtf h3 {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.modal .rtf > * + * {
+  margin-top: 1em;
+}
+
+.modal .rtf > * + :is(h1, h2, h3) {
+  margin-top: 2em;
+}
+
+.modal .rtf > :is(h1, h2, h3) + * {
+  margin-top: 0.75em;
+}
+
+.modal .rtf ul,
+.modal .rtf ol {
+  margin-left: 20px;
+  list-style-position: inside;
+}
+
+.modal .rtf ol {
+  list-style: numeric;
+}
+
+.modal .rtf ul {
+  list-style: disc;
+}
+
+.modal-container-footer {
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid #fff; /* Weiß statt #ddd */
+  gap: 12px;
+  position: relative;
+}
+.modal-container-footer::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -51px;
+  left: 24px;
+  right: 24px;
+  height: 50px;
+  flex-shrink: 0;
+  background-image: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); /* 1 = volle Deckkraft */
+  pointer-events: none;
+}
+
+.modal .icon-button {
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.15s ease;
+}
+
+.modal .icon-button:hover,
+.modal .icon-button:focus {
+  background-color: #dfdad7;
+}
+
+
+.center-wrapper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1300px; /* 250px + 20px + 250px = 520px Gesamtlänge */
+}
+
+.inputFields {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+}
+
+.inputRow {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.crmRow input {
+  width: 250px; /* Feste Breite für jedes CRM-Feld */
+}
+
+.mailpoetRow input {
+  width: 100%;
+}
+
+
+.inputFields .input {
+  width: 100%;
+  max-width: 800px;
+  height: 15px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid lightgrey;
+  outline: none;
+  box-shadow: 0px 0px 20px -18px;
+}
+
+.inputFields .input:hover {
+  border: 2px solid lightgrey;
+  box-shadow: 0px 0px 20px -17px;
+}
+
+.inputFields .input:focus {
+  border: 2px solid grey;
+}
