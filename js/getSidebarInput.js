@@ -1,54 +1,68 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // Rufe die Funktion regelmäßig auf, um die Sidebar zu aktualisieren
-  setInterval(() => {
-    simulateFetch().then(data => {
-      // Leere den aktuellen Inhalt der Sidebar
-      clearSidebar();
-      // Füge die Titel hinzu
-      addSidebarTitles();
-      // Füge die neuen Daten hinzu
-      data.forEach(item => addSidebarItem(item));
-    });
-  }, 1000); // Aktualisiere alle 1 Sekunden
-});
-
-// Funktion, die einen simulierten Fetch mit mindestens 10 Testdaten zurückgibt
-function simulateFetch() {
-  return new Promise((resolve) => {
-    fetch('http://localhost:5000/api/GETsidebarInfo') // Replace with your actual API endpoint
-      .then(response => response.json())
-      .then(data => {
-        // Ensure data is in correct format regardless of input
-        let formattedData = [];
-        
-        if (typeof data === 'string') {
-          // If data is a string, try to parse it
-          try {
-            data = JSON.parse(data);
-          } catch (e) {
-            data = [{ filename: data, status: 'Unknown' }];
-          }
-        }
-        
-        // Handle array of strings or objects
-        formattedData = Array.isArray(data) ? data.map(item => {
-          if (typeof item === 'string') {
-            return { filename: item, status: 'Unknown' };
-          }
-          return {
-            filename: item.filename || item.name || 'Unknown',
-            status: item.status || 'Unknown'
-          };
-        }) : [];
-
-        resolve(formattedData);
-      })
-      .catch(() => {
-        // Return empty array in case of error
-        resolve([]);
-      });
-  });
+function getServerUrl() {
+    const serverPort = 5000;
+    return `http://localhost:${serverPort}`;
 }
+
+// Remove duplicate event listener and combine the functionality
+document.addEventListener('DOMContentLoaded', () => {
+    function simulateFetch() {
+        const serverUrl = getServerUrl();
+        
+        return fetch(`${serverUrl}/api/GETsidebarInfo`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors' // Add CORS mode
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!Array.isArray(data)) {
+                console.warn('Received non-array data:', data);
+                return [];
+            }
+            return data.map(item => ({
+                filename: item.filename || 'Unknown',
+                status: item.status || 'Unknown'
+            }));
+        })
+        .catch(error => {
+            console.error('Error fetching sidebar data:', error);
+            return []; 
+        });
+    }
+
+    function updateSidebar() {
+        simulateFetch()
+            .then(data => {
+                if (data) {
+                    clearSidebar();
+                    addSidebarTitles();
+                    data.forEach(item => addSidebarItem(item));
+                }
+            })
+            .catch(error => {
+                console.error('Sidebar update failed:', error);
+            });
+    }
+
+    // Initial update
+    updateSidebar();
+    
+    // Then update every second
+    const intervalId = setInterval(updateSidebar, 1000);
+
+    // Clean up interval when needed
+    window.addEventListener('unload', () => {
+        clearInterval(intervalId);
+    });
+});
 
 // Funktion, die die Titel für die Sidebar hinzufügt
 function addSidebarTitles() {

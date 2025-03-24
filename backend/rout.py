@@ -57,18 +57,18 @@ def routes(app):
         return jsonify({"status": "success", "message": "Data written and blocker activated."})
 
 
-    @app.route('/GETsidebarInfo', methods=['GET'])
-    def send_sidebar_info():
-        try:
-            with open(sidebarInfo_dir, "r") as file:
-                data = json.load(file)
-                formatted_data = [
-                    {
-                        'filename': item.get('filename', 'Unknown'),
-                        'status': item.get('status', 'Unknown')
-                    }
-                    for item in data if isinstance(item, dict)
-                ]
-            return jsonify(formatted_data)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return jsonify([])
+@app.route('/api/GETsidebarInfo', methods=['GET'])
+def send_sidebar_info():
+    try:
+        with open(sidebarInfo_dir, "r") as file:
+            data = json.load(file)
+            formatted_data = [
+                {
+                    'filename': item.get('filename', 'Unknown'),
+                    'status': item.get('status', 'Unknown')
+                }
+                for item in data if isinstance(item, dict)
+            ]
+        return jsonify(formatted_data), 200, {'Content-Type': 'application/json'}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify([]), 404, {'Content-Type': 'application/json'}
