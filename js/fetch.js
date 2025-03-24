@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Show processing alert
         showAlert("Verarbeitung läuft...", "info", 0); // Duration 0 means it stays until removed
 
-        fetch('http://localhost:5000/api/getInformation', {
+        fetch('http://localhost:5000/api/GETmodeInfo', {
             method: 'POST',
             headers: {
           'Content-Type': 'application/json'

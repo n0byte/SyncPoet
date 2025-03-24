@@ -2,44 +2,19 @@
 #                         GET CRM
 # ==========================================================
 # Author: Melvin Paul Hanns
-# Date: 2025.02.25
-# Version: 1.4
-# Description: Dieses Skript stellt Funktionen bereit, die die CRM-Daten
-#              aus der CRM-Datenbank abfragen und filtern. Es werden nur 
-#              Einträge ab einem bestimmten Datum (z. B. den letzten X Tagen,
-#              Monaten oder Jahren) zurückgegeben. Wird der Modus "all"
-#              verwendet, wird kein Zeitfilter angewendet.
+# Version: 1.5 (angepasst für direkte Übergabe der Settings und Fallback bei 'undefined')
 # ==========================================================
 
-# -------------------------------
-#          Import Libraries
 from datetime import datetime, timedelta
 import requests
 import msgpack
 import os
 import json
-from config import read_json  # Neuer Import aus config.py
-
-# -------------------------------
-# Konfiguration laden
-config = read_json()
-settings = config.get("settings", {})
-
-CRM_API_URL = settings.get("CRMUrl")
-try:
-    CRM_HEADERS = json.loads(settings.get("CRMHeader", "{}"))
-except json.JSONDecodeError:
-    CRM_HEADERS = {}
-MAILPOET_URL = settings.get("MailPoetUrl")
 
 # -------------------------------
 #          Global Variables
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
-
-# Standard-Datumsfilter, falls kein anderer Wert übergeben wird.
-selected_date = "days 30"
-# -------------------------------
 
 # -------------------------------
 #          Helper Functions
@@ -48,10 +23,17 @@ def parse_date_value(date_value):
     if len(parts) == 1:
         # Falls nur die Einheit übergeben wird, Standardwert (z.B. 10 Tage) verwenden
         unit = parts[0]
-        value = 10
+        value = 14
     elif len(parts) == 2:
         unit, value = parts
-        value = int(value)
+        # Falls der Wert nicht definiert oder nicht konvertierbar ist, Standardwert 10 verwenden
+        if value == "undefined":
+            value = 14
+        else:
+            try:
+                value = int(value)
+            except ValueError:
+                value = 14
     else:
         raise ValueError("Invalid date format")
     
@@ -66,7 +48,7 @@ def parse_date_value(date_value):
         raise ValueError("Invalid date unit")
     return start_date.strftime("%Y-%m-%d")
 
-def fetch_crm_data(page, limit, start_date):
+def fetch_crm_data(page, limit, start_date, crm_url, crm_headers):
     params = {
         "limit": limit,
         "page": page,
@@ -75,7 +57,7 @@ def fetch_crm_data(page, limit, start_date):
     if start_date is not None:
         params["sqlfilters"] = f"(t.datec:>=:'{start_date}')"
     print(f"Fetching data with params: {params}")  # Debugging-Ausgabe
-    response = requests.get(CRM_API_URL, headers=CRM_HEADERS, params=params)
+    response = requests.get(crm_url, headers=crm_headers, params=params)
     if response.status_code == 404:
         return None
     response.raise_for_status()
@@ -114,43 +96,39 @@ def process_crm_data(data, artificial_id, name_filters=None, email_filters=None)
         processed_data.append(item)
         artificial_id += 1
     return processed_data, artificial_id
-# -------------------------------
 
 # -------------------------------
 #          Main Functions
-def get_all_crm_data(date_value=None, custom_settings=None):
+def get_all_crm_data(date_value, custom_settings):
     """
-    Ruft alle CRM-Daten ab.
-    Optional können mit custom_settings die globalen Einstellungen überschrieben werden.
+    Holt alle CRM-Daten basierend auf date_value und übergebenen Einstellungen.
     """
-    global CRM_API_URL, CRM_HEADERS, MAILPOET_URL
-    if custom_settings:
-        CRM_API_URL = custom_settings.get("CRMUrl", CRM_API_URL)
-        try:
-            CRM_HEADERS = json.loads(custom_settings.get("CRMHeader", "{}"))
-        except json.JSONDecodeError:
-            CRM_HEADERS = {}
-        MAILPOET_URL = custom_settings.get("MailPoetUrl", MAILPOET_URL)
+    if not custom_settings:
+        raise ValueError("❌ Es wurden keine custom_settings übergeben!")
     
+    # Einstellungen aus dem übergebenen Dictionary verwenden
+    crm_url = custom_settings.get("CRMUrl")
+    try:
+        crm_headers = json.loads(custom_settings.get("CRMHeader", "{}"))
+    except json.JSONDecodeError:
+        crm_headers = {}
+    mailpoet_url = custom_settings.get("MailPoetUrl")  # aktuell ungenutzt
+
     page = 0
     limit = 200
     all_entries = []
     artificial_id = 0
 
-    # Wird "all" übergeben, wird kein Zeitfilter angewendet.
-    if date_value:
-        if date_value.lower() == "all":
-            start_date = None
-        else:
-            start_date = parse_date_value(date_value)
+    if date_value.lower() == "all":
+        start_date = None
     else:
-        start_date = parse_date_value(selected_date)
+        start_date = parse_date_value(date_value)
 
     while True:
         try:
-            data = fetch_crm_data(page, limit, start_date)
+            data = fetch_crm_data(page, limit, start_date, crm_url, crm_headers)
         except requests.RequestException as e:
-            print(f"❌ Fehler beim Abrufen der CRM Daten: {e}")
+            print(f"Fehler beim Abrufen der CRM Daten: {e}")
             break
 
         if data is None or not data:
@@ -169,26 +147,34 @@ def get_all_crm_data(date_value=None, custom_settings=None):
 
     return all_entries
 
-def get_specific_crm_data(date_value=None, name_filters=None, email_filters=None, max_items=10):
+def get_specific_crm_data(date_value, custom_settings, name_filters=None, email_filters=None, max_items=10):
+    """
+    Holt spezifische CRM-Daten basierend auf Filtern und übergebenen Einstellungen.
+    """
+    if not custom_settings:
+        raise ValueError("❌ Es wurden keine custom_settings übergeben!")
+    
+    crm_url = custom_settings.get("CRMUrl")
+    try:
+        crm_headers = json.loads(custom_settings.get("CRMHeader", "{}"))
+    except json.JSONDecodeError:
+        crm_headers = {}
+    
     page = 0
     limit = 200
     all_entries = []
     artificial_id = 0
 
-    # Wird "all" übergeben, wird kein Zeitfilter angewendet.
-    if date_value:
-        if date_value.lower() == "all":
-            start_date = None
-        else:
-            start_date = parse_date_value(date_value)
+    if date_value.lower() == "all":
+        start_date = None
     else:
-        start_date = parse_date_value(selected_date)
+        start_date = parse_date_value(date_value)
 
     while True:
         try:
-            data = fetch_crm_data(page, limit, start_date)
+            data = fetch_crm_data(page, limit, start_date, crm_url, crm_headers)
         except requests.RequestException as e:
-            print(f"❌ Fehler beim Abrufen der CRM Daten: {e}")
+            print(f"Fehler beim Abrufen der CRM Daten: {e}")
             break
 
         if data is None or not data:

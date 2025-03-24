@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Funktion, die einen simulierten Fetch mit mindestens 10 Testdaten zurückgibt
 function simulateFetch() {
   return new Promise((resolve) => {
-    fetch('http://localhost:5000/api/getSidebarinput') // Replace with your actual API endpoint
+    fetch('http://localhost:5000/api/GETsidebarInfo') // Replace with your actual API endpoint
       .then(response => response.json())
       .then(data => {
         // Ensure data is in correct format regardless of input
