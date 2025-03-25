@@ -1,6 +1,7 @@
 from requestBlocker import check_blocker_status, activate_blocker, deactivate_blocker
 from mode import single_mode, c2m_mode, m2c_mode, all_mode
 from flask import Flask, request, jsonify
+import flask
 from jsonReader import GETmode, modeInfo_dir, sidebarInfo_dir
 from jsonWriter import writeModeInformation
 import threading
@@ -11,7 +12,7 @@ app = Flask(__name__)
 
 def routes(app):
 
-    @app.route('/GETmodeInfo', methods=['GET'])
+    @app.route('/GETmodeInfo', methods=['POST'])
     def mode_execusion():
         # Check if the request is blocked
         if check_blocker_status():
@@ -57,18 +58,19 @@ def routes(app):
         return jsonify({"status": "success", "message": "Data written and blocker activated."})
 
 
-@app.route('/api/GETsidebarInfo', methods=['GET'])
-def send_sidebar_info():
-    try:
-        with open(sidebarInfo_dir, "r") as file:
-            data = json.load(file)
-            formatted_data = [
-                {
-                    'filename': item.get('filename', 'Unknown'),
-                    'status': item.get('status', 'Unknown')
-                }
-                for item in data if isinstance(item, dict)
-            ]
-        return jsonify(formatted_data), 200, {'Content-Type': 'application/json'}
-    except (FileNotFoundError, json.JSONDecodeError):
-        return jsonify([]), 404, {'Content-Type': 'application/json'}
+ 
+    @app.route('/api/GETsidebarInfo', methods=['GET'])
+    def send_sidebar_info():
+        try:
+            with open(sidebarInfo_dir, "r") as file:
+                data = json.load(file)
+                formatted_data = [
+                    {
+                        'filename': item.get('filename', 'Unknown'),
+                        'status': item.get('status', 'Unknown')
+                    }
+                    for item in data if isinstance(item, dict)
+                ]
+            return flask.jsonify(formatted_data)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return flask.jsonify([])
