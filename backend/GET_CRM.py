@@ -6,6 +6,7 @@
 # ==========================================================
 
 from datetime import datetime, timedelta
+from ensure import cache_dir
 import requests
 import msgpack
 import os
@@ -13,8 +14,7 @@ import json
 
 # -------------------------------
 #          Global Variables
-CACHE_DIR = "cache"
-os.makedirs(CACHE_DIR, exist_ok=True)
+CACHE_DIR = cache_dir
 
 # -------------------------------
 #          Helper Functions
@@ -100,9 +100,6 @@ def process_crm_data(data, artificial_id, name_filters=None, email_filters=None)
 # -------------------------------
 #          Main Functions
 def get_all_crm_data(date_value, custom_settings):
-    """
-    Holt alle CRM-Daten basierend auf date_value und übergebenen Einstellungen.
-    """
     if not custom_settings:
         raise ValueError("❌ Es wurden keine custom_settings übergeben!")
     
@@ -148,9 +145,6 @@ def get_all_crm_data(date_value, custom_settings):
     return all_entries
 
 def get_specific_crm_data(date_value, custom_settings, name_filters=None, email_filters=None, max_items=10):
-    """
-    Holt spezifische CRM-Daten basierend auf Filtern und übergebenen Einstellungen.
-    """
     if not custom_settings:
         raise ValueError("❌ Es wurden keine custom_settings übergeben!")
     
