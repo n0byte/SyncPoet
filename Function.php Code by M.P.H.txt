@@ -1,0 +1,124 @@
+// ======================================== Melvin Code start ======================================== //
+
+/**
+ * Registriere REST-Routen für MailPoet.
+ */
+add_action('rest_api_init', function() {
+    // GET-Endpunkt: Alle Abonnenten, die in Liste 3 sind
+    register_rest_route('ketmarketMailPoetAPIbyMPH/v1', '/mailpoet-list3', [
+        'methods'  => 'GET',
+        'callback' => 'ketmarket_GET_MailPoet_Logic_identifer27032025',
+        'permission_callback' => '__return_true'
+    ]);
+
+    // POST-Endpunkt: Neuen Abonnenten zu Liste 3 hinzufügen
+    register_rest_route('ketmarketMailPoetAPIbyMPH/v1', '/mailpoet-list3', [
+        'methods'  => 'POST',
+        'callback' => 'ketmarket_POST_MailPoet_Logic_identifer270320251649',
+        'permission_callback' => '__return_true'
+    ]);
+});
+
+/**
+ * GET: Alle Abonnenten, die in Liste 3 sind.
+ */
+function ketmarket_GET_MailPoet_Logic_identifer27032025(WP_REST_Request $request) {
+    // Debug-Infos sammeln
+    $debug_messages = [];
+    $debug_messages[] = 'Prozess gestartet: ' . date('Y-m-d H:i:s');
+
+    // Initialisierung des Rückgabe-Arrays
+    $response_data = [];
+
+    try {
+        // Prüfen, ob die MailPoet API-Klasse verfügbar ist
+        if (class_exists(\MailPoet\API\API::class)) {
+            $debug_messages[] = 'MailPoet API-Klasse geladen und verfügbar.';
+
+            // MailPoet API v1 Instanz holen
+            $mailpoet_api = \MailPoet\API\API::MP('v1');
+            $debug_messages[] = 'MailPoet API v1 initialisiert.';
+
+            // Filter für Abonnenten: Liste ID 3, nur "subscribed" Status
+            $filter = [
+                'listId' => 3,            // Segment/List ID 3 (unsere Ziel-Liste)
+                'status' => 'subscribed'  // nur bestätigte/angemeldete Abonnenten
+            ];
+            $debug_messages[] = 'Filter gesetzt (listId=3, status=subscribed).';
+
+            // Abonnenten anhand des Filters abrufen
+            $subscribers = $mailpoet_api->getSubscribers($filter);
+            $count = is_array($subscribers) ? count($subscribers) : 0;
+            $debug_messages[] = "Anzahl gefundener Abonnenten: {$count}.";
+
+            // Abonnenten in die Response einfügen
+            $response_data['subscribers'] = $subscribers;
+        } else {
+            // MailPoet API nicht verfügbar (Plugin evtl. nicht aktiv)
+            $debug_messages[] = 'FEHLER: MailPoet API-Klasse nicht verfügbar. Ist das Plugin aktiv?';
+            $response_data['subscribers'] = [];
+        }
+    } catch (\Exception $e) {
+        // Fehler beim Abrufen der Abonnenten (Exception gefangen)
+        $debug_messages[] = 'FEHLER beim Abruf: ' . $e->getMessage();
+        $response_data['subscribers'] = [];
+    }
+
+    // Debug-Infos ins Log schreiben
+    error_log('[MailPoet GET] ' . implode(' | ', $debug_messages));
+
+    // Debug-Infos auch in der API-Antwort zurückgeben
+    $response_data['debug'] = $debug_messages;
+
+    return $response_data;
+}
+
+/**
+ * POST: Neuen Abonnenten zu Liste 3 hinzufügen.
+ */
+function ketmarket_POST_MailPoet_Logic_identifer270320251649(WP_REST_Request $request) {
+    // Prüfen, ob die MailPoet API-Klasse verfügbar ist
+    if (!class_exists(\MailPoet\API\API::class)) {
+        error_log("POST Endpoint: MailPoet API not available.");
+        return new WP_Error('mailpoet_not_loaded', 'MailPoet API is not available.', array('status' => 500));
+    }
+
+    // Parameter aus der Anfrage holen und bereinigen
+    $params     = $request->get_json_params();
+    $email      = sanitize_email($params['email'] ?? '');
+    $first_name = sanitize_text_field($params['first_name'] ?? '');
+    $last_name  = sanitize_text_field($params['last_name'] ?? '');
+
+    if (empty($email)) {
+        error_log("POST Endpoint: Missing email.");
+        return new WP_Error('missing_email', 'Email is required', array('status' => 400));
+    }
+
+    // MailPoet API Instanz holen (Version 1)
+    $mailpoet = \MailPoet\API\API::MP('v1');
+    $list_id = 3;
+
+    $subscriber_data = [
+        'email'      => $email,
+        'first_name' => $first_name,
+        'last_name'  => $last_name,
+    ];
+
+    try {
+        // Neuen Abonnenten hinzufügen, ohne Bestätigungs-E-Mail zu versenden
+        $subscriber = $mailpoet->addSubscriber($subscriber_data, [$list_id], ['send_confirmation_email' => false]);
+        error_log("POST Endpoint: Subscriber added: " . print_r($subscriber, true));
+
+        return rest_ensure_response([
+            'email'      => $subscriber['email'],
+            'first_name' => $subscriber['first_name'] ?? '',
+            'last_name'  => $subscriber['last_name'] ?? '',
+            'status'     => $subscriber['status'] ?? '',
+        ]);
+    } catch (\Exception $e) {
+        error_log("POST Endpoint: Error: " . $e->getMessage());
+        return new WP_Error('mailpoet_error', $e->getMessage(), array('status' => 500));
+    }
+}
+
+// ======================================== Melvin Code end ======================================== //
