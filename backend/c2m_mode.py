@@ -1,8 +1,9 @@
-from jsonReader import GETsettings, GETdate
+from jsonReader import GETsettings, GETdate, cache_dir
 from jsonReader import sidebarInfo_dir
 from GET_CRM import get_all_crm_data
 from POST_MailPoet import post_subscriber
 from jsonWriter import writeUserPlaceHolderInformation
+import time
 import json
 import sys
 import os
@@ -28,6 +29,17 @@ def c2m_mode():
     # Posting into MAilPoet
     posting_crm_data = post_subscriber(custom_settings=settings)
     print(f"CRM data posted: {posting_crm_data}")
-
+    
+    time.sleep(1)
+    # Clear cache directory
+    for file in os.listdir(cache_dir):
+        file_path = os.path.join(cache_dir, file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(f'Error: {e}')
+        
+    time.sleep(1)
     print("Processing done.")
     print("Successfully completed C2M mode.")

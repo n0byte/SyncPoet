@@ -2,6 +2,7 @@ from requestBlocker import check_blocker_status, activate_blocker, deactivate_bl
 from mode import single_mode, c2m_mode, m2c_mode, all_mode
 from flask import Flask, request, jsonify
 import flask
+from flask_cors import CORS
 from jsonReader import GETmode, modeInfo_dir, sidebarInfo_dir
 from jsonWriter import writeModeInformation
 import threading
@@ -9,10 +10,11 @@ import json
 import time
 
 app = Flask(__name__)
+#CORS(app)
 
 def routes(app):
 
-    @app.route('/GETmodeInfo', methods=['POST'])
+    @app.route('/api/GETmodeInfo', methods=['POST'])
     def mode_execusion():
         # Check if the request is blocked
         if check_blocker_status():
