@@ -36,20 +36,20 @@ Node.js & npm installieren (empfohlen über nvm oder Node.js Downloads)
 
 Rust installieren:
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh```
 
 Dann in deinem Projektverzeichnis:
 
-npm install
-npm run tauri dev
+```npm install```
+```npm run tauri dev```
 
 2. Python-Umgebung einrichten
 3. Das hier ist nur Optional, weil man es auch Global machen kann.
    
 Ein virtuelles Environment (venv) anlegen:
 
-python -m venv venv
-venv\Scripts\activate
+```python -m venv venv```
+```venv\Scripts\activate```
 Abhängigkeiten installieren:
 
 pip install -r requirements.txt (requirements sind nur als veranschaulichung eigentlich kann man auch alles mit pip isntall packetname isntallieren)
@@ -75,6 +75,7 @@ Es gibt einen backend, src und src-tauri Ordner.
       welche Skripte mit gestartet werden sollen beim start und welche ordner Init. werden und noch mehr.
     - Und dann gibt es noch einen icon Ordner da sind alle icons drinnen.
 
+-
     [WICHTIG!] Die Dateistruktur "hier" passt nicht zu der in Tauri, hier sind nur alle Development Sachen und Dateien die von mir Stammen. Für mehr Informationen wie man die Dateien Ordnugsgemäß in das
                Tauri projekt einbindet kann, bitte schaut euch das Bild was direkt im Ordner liegt an.
     
