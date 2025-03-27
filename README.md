@@ -13,7 +13,7 @@ Um die Entwicklungsumgebung korrekt aufzusetzen, brauchst du Folgendes:
 2. Tauri
     - Wird für das Desktop-Frontend verwendet.
 
-3.Rust
+3. Rust
     - Wird von Tauri benötigt (z. B. für das native Packaging).
 
 4. Eine Entwicklungsumgebung, z. B. Visual Studio Code mit folgenden Erweiterungen:
@@ -74,6 +74,9 @@ Es gibt einen backend, src und src-tauri Ordner.
     - Im src-tauri Verzeichnis sind Wichtige Rust und json Dateien in src-tauri gibt es nochmal einen src Ordner. darin ist eine main.rs und eine lib.rs. In den beiden Dateien wird konfiguriert #
       welche Skripte mit gestartet werden sollen beim start und welche ordner Init. werden und noch mehr.
     - Und dann gibt es noch einen icon Ordner da sind alle icons drinnen.
+
+    [WICHTIG!] Die Dateistruktur "hier" passt nicht zu der in Tauri, hier sind nur alle Development Sachen und Dateien die von mir Stammen. Für mehr Informationen wie man die Dateien Ordnugsgemäß in das
+               Tauri projekt einbindet kann, bitte schaut euch das Bild was direkt im Ordner liegt an.
     
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
