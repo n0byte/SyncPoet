@@ -6,6 +6,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 modeInfo_dir = os.path.join(current_dir, 'modeInfo.json')
 sidebarInfo_dir = os.path.join(current_dir, 'sidebarInfo.json')
 
+cache_dir = os.path.join(current_dir, 'cache')
 
 def GETmode():
     print("Get Mode from modeInfo.json...")

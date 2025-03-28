@@ -50,7 +50,7 @@ def prepare_payload(data):
 
 # -------------------------------
 #          Main Functions
-def post_all_cached_data_to_crm(custom_settings):
+def post_all_crm_data(custom_settings):
     data = load_cached_data()
     payloads = prepare_payload(data)
 
