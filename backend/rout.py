@@ -1,16 +1,14 @@
 from requestBlocker import check_blocker_status, activate_blocker, deactivate_blocker
-from mode import single_mode, c2m_mode, m2c_mode, all_mode
-from flask import Flask, request, jsonify
-import flask
-from flask_cors import CORS
 from jsonReader import GETmode, modeInfo_dir, sidebarInfo_dir
+from mode import single_mode, c2m_mode, m2c_mode, all_mode
 from jsonWriter import writeModeInformation
+from flask import Flask, request, jsonify
 import threading
+import flask
 import json
 import time
 
 app = Flask(__name__)
-#CORS(app)
 
 def routes(app):
 

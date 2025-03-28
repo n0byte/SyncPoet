@@ -19,10 +19,6 @@ def m2c_mode():
     date_value = raw_date.replace(":", " ")         # Convert to: "days 30" for compatibility with GET_CRM
     settings = GETsettings()
 
-     # Gets the CRM Data 
-    print("Getting MailPoet data with date_value:", date_value)
-    mailpoet_data = get_all_mailpoet_data(date_value=date_value, custom_settings=settings)
-    print(f"MailPoet data retrieved: {mailpoet_data}")
 
     # Posting into CRM
     print("Posting MailPoet data into CRM...")
@@ -43,3 +39,4 @@ def m2c_mode():
     print("Processing done.")
     print("Successfully completed M2C mode.")
 
+m2c_mode()
