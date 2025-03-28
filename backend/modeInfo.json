@@ -2,7 +2,7 @@
     "mode": "c2m",
     "singleMode": "select",
     "date": "days",
-    "howMany": "5",
+    "howMany": "7",
     "howManySynchronize": "0",
     "user": {
         "emails": [],
@@ -11,6 +11,6 @@
     "settings": {
         "CRMUrl": "https://erp.ketmarket.eu/api/index.php/thirdparties",
         "CRMHeader": "{\"DOLAPIKEY\": \"31782J51I0s3ZFZZbpqZbCTWxcpPi8jv\", \"Accept\": \"application/json\"}",
-        "MailPoetUrl": "https://ketmarket.eu/wp-json/custom-mailpoet/v1"
+        "MailPoetUrl": "https://ketmarket.eu/wp-json/ketmarketMailPoetAPIbyMPH/v1"
     }
 }

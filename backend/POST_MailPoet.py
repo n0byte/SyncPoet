@@ -3,82 +3,73 @@
 # ==========================================================
 # Author: Melvin Paul Hanns
 # Date: 2025.02.25
-# Version: 1.1
-# Description: This script will post subscribers to the
-#              MailPoet database by reading cached data.
+# Version: 1.2
+# Description:
+#     This script posts subscribers to the MailPoet list 3
+#     by reading CRM-cached data in msgpack format.
 # ==========================================================
 
-# -------------------------------
-#          Import Libraries
-from ensure import cache_dir
+import os
 import requests
 import msgpack
-import os
-# -------------------------------
+from ensure import cache_dir
 
 # -------------------------------
 #          Global Variables
-
 CACHE_DIR = cache_dir
-
+HEADERS = {"Content-Type": "application/json"}
+MAILPOET_ENDPOINT = "POSTmailpoet-list3"
 # -------------------------------
 
-# -------------------------------
-#          Main Function
 def post_subscriber(custom_settings):
     if not custom_settings:
-        raise ValueError("❌ Es wurden keine custom_settings übergeben!")
+        raise ValueError("❌ Keine custom_settings übergeben!")
 
-    mailpoet_url = custom_settings.get("MailPoetUrl")
-    if not mailpoet_url:
+    mailpoet_base = custom_settings.get("MailPoetUrl")
+    if not mailpoet_base:
         raise ValueError("❌ MailPoetUrl fehlt in den custom_settings!")
 
-    headers = {"Content-Type": "application/json"}
+    mailpoet_url = mailpoet_base.rstrip("/") + f"/{MAILPOET_ENDPOINT}"
+    print(f"[INFO] Ziel-URL für POST: {mailpoet_url}")
 
-    # Debugging: Start processing cache directory
-    print(f"[DEBUG] Verarbeite Cache-Verzeichnis: {CACHE_DIR}")
-
-    # Process only files ending with 'crm.msgpack'
+    print(f"[INFO] Lese Cache-Verzeichnis: {CACHE_DIR}")
     for file_name in os.listdir(CACHE_DIR):
         if not file_name.endswith("crm.msgpack"):
-            print(f"[DEBUG] Überspringe Datei: {file_name} (nicht relevant)")
+            print(f"[DEBUG] ➔ Überspringe {file_name} (nicht relevant)")
             continue
 
-        cache_file = os.path.join(CACHE_DIR, file_name)
-        print(f"[DEBUG] Verarbeite Datei: {cache_file}")
+        file_path = os.path.join(CACHE_DIR, file_name)
+        print(f"[INFO] ➔ Verarbeite: {file_path}")
 
         try:
-            with open(cache_file, "rb") as f:
+            with open(file_path, "rb") as f:
                 data = msgpack.unpack(f)
 
-            # Debugging: Show loaded data
-            print(f"[DEBUG] Geladene Daten: {data}")
-
+            # Zusammenbauen des Payloads
             payload = {
                 "email": data.get("email"),
                 "first_name": data.get("name", ""),
-                "last_name": "",
-                "status": "subscribed"
+                "last_name": ""
             }
-            url = f"{mailpoet_url}/post-subscriber/"
 
-            # Debugging: Show payload and URL
-            print(f"[DEBUG] Sende Anfrage an URL: {url} mit Payload: {payload}")
+            print(f"[DEBUG]   → Payload: {payload}")
 
-            response = requests.post(url, json=payload, headers=headers, timeout=10)
-            json_response = response.json()
+            response = requests.post(mailpoet_url, json=payload, headers=HEADERS, timeout=10)
 
-            if response.status_code == 500 and json_response.get("status") == "warning":
-                print(f"[INFO] Fehler 500 ignoriert für {data.get('email')}, weil User erfolgreich hinzugefügt wurde!")
+            try:
+                response_data = response.json()
+            except Exception:
+                response_data = {"text": response.text}
+
+            if response.status_code in [200, 201]:
+                print(f"[✅] Hinzugefügt: {payload['email']}")
+            elif response.status_code == 500 and response_data.get("status") == "warning":
+                print(f"[⚠️] Fehler 500 ignoriert: {payload['email']} (vermutlich erfolgreich)")
             else:
-                response.raise_for_status()
+                print(f"[❌] Fehler bei {payload['email']}: {response.status_code} – {response_data}")
 
-            print(f"✅ Erfolgreich hinzugefügt: {data.get('email')}")
-
-        except requests.RequestException as e:
-            print(f"[Fehler] Fehler beim Hinzufügen von {data.get('email')}: {e}")
         except Exception as e:
-            print(f"[Fehler] Fehler beim Verarbeiten der Datei {cache_file}: {e}")
+            print(f"[ERROR] Fehler bei Datei {file_name}: {e}")
 
-    print("[INFO] Verarbeitung abgeschlossen.")
-# -------------------------------
+    print("[INFO] ✅ Verarbeitung abgeschlossen.")
+    # --------------------------------
