@@ -1,10 +1,8 @@
+from jsonWriter import writeUserPlaceHolderInformation
 from jsonReader import GETsettings, GETdate, cache_dir
-from jsonReader import sidebarInfo_dir
 from GET_CRM import get_all_crm_data
 from POST_MailPoet import post_subscriber
-from jsonWriter import writeUserPlaceHolderInformation
 import time
-import json
 import sys
 import os
 
@@ -27,6 +25,7 @@ def c2m_mode():
     print(f"CRM data retrieved: {crm_data}")
 
     # Posting into MAilPoet
+    print("Posting CRM data into MailPoet...")
     posting_crm_data = post_subscriber(custom_settings=settings)
     print(f"CRM data posted: {posting_crm_data}")
     
