@@ -9,7 +9,7 @@ function initializeSettingsModal() {
     const defaults = {
       crmUrl: "https://erp.ketmarket.eu/api/index.php/thirdparties",
       crmHeader: '{"DOLAPIKEY": "31782J51I0s3ZFZZbpqZbCTWxcpPi8jv", "Accept": "application/json"}',
-      mailPoetUrl: "https://staging4.ketmarket.eu/wp-json/custom-mailpoet/v1"
+      mailPoetUrl: "https://ketmarket.eu/wp-json/artificialMailPoetAPI/v1"
     };  
   
     // Lade die gespeicherten Einstellungen aus localStorage

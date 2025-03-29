@@ -1,14 +1,3 @@
-# ==========================================================
-#                         POST CRM
-# ==========================================================
-# Author: Melvin Paul Hanns
-# Date: 2025.02.25
-# Version: 1.0
-# Description: this script is used to create a new entry in the CRM
-#              system. It sends a POST request to the CRM API
-#              endpoint with the required data.
-# ==========================================================
-
 # -------------------------------
 #          Import Libraries
 from jsonReader import cache_dir
@@ -46,11 +35,21 @@ def prepare_payload(data):
         }
         payloads.append(payload)
     return payloads
+
+def crm_email_exists(crm_url, crm_headers, email):
+    check_url = f"{crm_url}?sqlfilters=(email:=:'{email}')"
+    try:
+        response = requests.get(check_url, headers=crm_headers, timeout=5)
+        results = response.json()
+        return len(results) > 0
+    except Exception as e:
+        print(f"[WARN] CRM-Check fehlgeschlagen: {e}")
+        return False
 # -------------------------------
 
 # -------------------------------
 #          Main Functions
-def post_all_crm_data(custom_settings):
+def post_subscriber_into_crm(custom_settings):
     data = load_cached_data()
     payloads = prepare_payload(data)
 
@@ -61,9 +60,13 @@ def post_all_crm_data(custom_settings):
         crm_headers = {}
 
     for payload in payloads:
+        if crm_email_exists(crm_url, crm_headers, payload["email"]):
+            print(f"[SKIP] {payload['email']} existiert bereits im CRM – übersprungen.")
+            continue
+        
         response = requests.post(crm_url, headers=crm_headers, json=payload)
         if response.status_code in [200, 201]:
-            print("✅ Eintrag erfolgreich erstellt!")
+            print(f"✅ Eintrag erfolgreich erstellt: {payload['email']}")
         else:
-            print(f"❌ Fehler {response.status_code}: {response.text}")
+            print(f"❌ Fehler {response.status_code} bei {payload['email']}: {response.text}")
 # -------------------------------

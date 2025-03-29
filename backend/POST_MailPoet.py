@@ -1,36 +1,32 @@
-# ==========================================================
-#                         POST MailPoet
-# ==========================================================
-# Author: Melvin Paul Hanns
-# Date: 2025.02.25
-# Version: 1.2
-# Description:
-#     This script posts subscribers to the MailPoet list 3
-#     by reading CRM-cached data in msgpack format.
-# ==========================================================
-
-import os
+from jsonReader import cache_dir
 import requests
 import msgpack
-from ensure import cache_dir
+import os
 
-# -------------------------------
-#          Global Variables
 CACHE_DIR = cache_dir
-HEADERS = {"Content-Type": "application/json"}
-MAILPOET_ENDPOINT = "POSTmailpoet-list3"
-# -------------------------------
 
-def post_subscriber(custom_settings):
+def mailpoet_email_exists(base_url, email):
+    check_url = f"{base_url}/CHECK-MailPoet-list3"
+    try:
+        response = requests.get(check_url, params={"email": email}, timeout=5)
+        return response.json().get("status") == "exists"
+    except Exception as e:
+        print(f"[WARN] Existenzprüfung fehlgeschlagen: {e}")
+        return False
+    
+
+def post_subscriber_into_mailpoet(custom_settings):
+    # Checks if custom_settings is provided
     if not custom_settings:
         raise ValueError("❌ Keine custom_settings übergeben!")
 
+    # Checks MailPoetUrl
     mailpoet_base = custom_settings.get("MailPoetUrl")
     if not mailpoet_base:
         raise ValueError("❌ MailPoetUrl fehlt in den custom_settings!")
 
-    mailpoet_url = mailpoet_base.rstrip("/") + f"/{MAILPOET_ENDPOINT}"
-    print(f"[INFO] Ziel-URL für POST: {mailpoet_url}")
+    target_url = f"{mailpoet_base}/POST-MailPoet-list3"
+    print(f"[INFO] Ziel-URL für POST: {target_url}")
 
     print(f"[INFO] Lese Cache-Verzeichnis: {CACHE_DIR}")
     for file_name in os.listdir(CACHE_DIR):
@@ -52,9 +48,14 @@ def post_subscriber(custom_settings):
                 "last_name": ""
             }
 
+            # Check if email already exists before processing
+            if mailpoet_email_exists(mailpoet_base, payload["email"]):
+                print(f"[SKIP] {payload['email']} existiert bereits – übersprungen.")
+                continue
+
             print(f"[DEBUG]   → Payload: {payload}")
 
-            response = requests.post(mailpoet_url, json=payload, headers=HEADERS, timeout=10)
+            response = requests.post(target_url, json=payload, timeout=10)
 
             try:
                 response_data = response.json()
@@ -72,4 +73,3 @@ def post_subscriber(custom_settings):
             print(f"[ERROR] Fehler bei Datei {file_name}: {e}")
 
     print("[INFO] ✅ Verarbeitung abgeschlossen.")
-    # --------------------------------
