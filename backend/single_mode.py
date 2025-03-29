@@ -72,7 +72,7 @@ def singleM2C_mode():
 
     # Gets the CRM Data 
     print("Getting Spezific MailPoet data...")
-    mailpoet_data = get_specific_mailpoet_data(custom_settings=settings, email_filters=emails, name_filters=names)
+    mailpoet_data = get_specific_mailpoet_data("all", custom_settings=settings, email_filters=emails, name_filters=names)
     print(f"CRM data retrieved: {mailpoet_data}")
 
     # Posting into MAilPoet
