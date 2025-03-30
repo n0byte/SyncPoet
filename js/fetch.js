@@ -28,8 +28,8 @@ document.addEventListener("DOMContentLoaded", function() {
         howMany: howMany,
         howManySynchronize: howManySynchronize,
         user: {
-          emails: emails,   // Array von E-Mail-Adressen
-          names: names      // Array von Namen
+          emails: emails,
+          names: names
         },
         settings: {
           CRMUrl: CRMUrl,
@@ -40,49 +40,45 @@ document.addEventListener("DOMContentLoaded", function() {
 
       console.log("Gesammelte Formulardaten:", formData);
 
-      // Show processing alert
-      showAlert("Verarbeitung läuft...", "info", 0); // Duration 0 means it stays until removed
+      // Zeige persistenten Hinweis
+      showAlert("Verarbeitung läuft...", "info", 0, "processing");
 
       fetch('http://localhost:5000/api/GETmodeInfo', {
-          method: 'POST',
-          headers: {
-        'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
       })
       .then(response => {
-          if (response.status === 503) {
-              // Process is busy
-              return response.json().then(data => {
-                  // Remove processing alert
-                  removeExistingAlerts('info');
-                  showAlert(data.message, "warning", 5000);
-                  throw new Error('Process busy');
-              });
-          }
-          if (!response.ok) {
-        throw new Error('Network response was not ok');
-          }
-          return response.json();
+        if (response.status === 503) {
+          return response.json().then(data => {
+            removeAlertById("processing");
+            showAlert(data.message, "warning", 5000);
+            throw new Error('Process busy');
+          });
+        }
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
       })
       .then(data => {
-          console.log('Success:', data);
-          // Remove processing alert
-          removeExistingAlerts('info');
-          
-          if (data.status === "success") {
-              showAlert(data.result.message, "success", 3000);
-          } else if (data.error) {
-              showAlert(data.error, "warning", 3000);
-          }
+        console.log('Success:', data);
+        removeAlertById("processing");
+
+        if (data.status === "success") {
+          showAlert(data.result?.message || "Verarbeitung erfolgreich!", "success", 3000);
+        } else if (data.error) {
+          showAlert(data.error, "warning", 3000);
+        }
       })
       .catch(error => {
-          if (error.message !== 'Process busy') {
-              console.error('Error:', error);
-              // Remove processing alert
-              removeExistingAlerts('info');
-              showAlert("Ein Fehler ist aufgetreten: " + error.message, "warning", 3000);
-          }
+        if (error.message !== 'Process busy') {
+          console.error('Error:', error);
+          removeAlertById("processing");
+          showAlert("Ein Fehler ist aufgetreten: " + error.message, "warning", 3000);
+        }
       });
     });
   } else {
@@ -90,10 +86,33 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-// Helper function to remove existing alerts of a specific type
-function removeExistingAlerts(type) {
-  const existingAlert = document.querySelector(`#alertsContainer .alert.${type}`);
-  if (existingAlert) {
-      existingAlert.remove();
+function showAlert(message, type = "info", duration = 3000, id = null) {
+  const alertsContainer = document.getElementById("alertsContainer");
+  if (!alertsContainer) return;
+
+  if (id) {
+    const existing = document.querySelector(`#alertsContainer .alert[data-id="${id}"]`);
+    if (existing) existing.remove();
   }
+
+  const alert = document.createElement("div");
+  alert.classList.add("alert", type);
+  alert.textContent = message;
+
+  if (id) {
+    alert.dataset.id = id;
+  }
+
+  alertsContainer.appendChild(alert);
+
+  if (duration > 0) {
+    setTimeout(() => {
+      alert.remove();
+    }, duration);
+  }
+}
+
+function removeAlertById(id) {
+  const alert = document.querySelector(`#alertsContainer .alert[data-id="${id}"]`);
+  if (alert) alert.remove();
 }

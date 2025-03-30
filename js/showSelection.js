@@ -23,8 +23,6 @@ document.addEventListener("DOMContentLoaded", function() {
       // Bei Single Mode: Alle Felder anzeigen
       if (mode === "single") {
         singleModeSelect.style.display = "inline-block";
-        dateSelect.style.display = "inline-block";
-        howManyInput.style.display = "inline-block";
         howManySyncInput.style.display = "inline-block";
       }
   
