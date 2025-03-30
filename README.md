@@ -87,11 +87,3 @@ Kurz gesagt Tauri ist wie electron, ein Framework das Erlaubt Web Technologies w
 schnell wie Electron ist, weil es RUST als backend nutzt. Rust kann komplex sein, aber meistens wenn man mit Tauri arbeitet nutzt man es recht wenig. Eigentlich  nur für den Start von Dateien oder SImplen verbindungen (so habe ich bisher die Erfahrung gemacht gehabt).
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Fazit: 
-
-Diese README Datei wurde von Melvin Paul Hanns Entwickelt, für ein besseres verständnis für SyncPoet aber auch wie man es Konfigurieren kann. Aber auch für das KetmArket Team was dies nutzt oder Developmen wollen. 
-
-:) Projekt hat mir Spaß geamcht und habe einiges gelernt wie man Sachen besser machen kann und auch kann ein wenig besser Python, HTML, CSS (JS eher mangelhafter).
-
-Falls noch große Fragen ausstehen die nicht ChatGPT ihnen beantworten kann oder andere Quellen können sie gerne mich über die Email Adresse melvin-paul.hanns@ketmarket.eu erreichen oder auch Kontaktieren.
