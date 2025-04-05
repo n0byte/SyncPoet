@@ -9,17 +9,19 @@ import os
 def single_mode():
 
     print("Reading json file...")
-    singleMode = GETsingleModeInfos()
-    print(f"Readed SingleMode: {singleMode}")
+    singleModeInfos = GETsingleModeInfos()
+    print(f"Readed SingleMode: {singleModeInfos}")
+
+    singleMode = singleModeInfos.get("singleMode", "").lower()
 
     if singleMode == "c2m":
-        print("c2m mode selected in SingleModo.")
+        print("c2m mode selected in SingleMode.")
         singleC2M_mode()
     elif singleMode == "m2c":
-        print("m2c mode selected in SingleModo.")
+        print("m2c mode selected in SingleMode.")
         singleM2C_mode()
     else:
-        print("Invalid mode selected.")     
+        print("Invalid mode selected.")
     
 
 

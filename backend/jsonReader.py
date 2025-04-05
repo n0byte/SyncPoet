@@ -64,8 +64,9 @@ def GETsingleModeInfos():
             data = json.load(f)
             singleMode = data.get('singleMode', {})
             user_info = data.get('user', {})
-            emails = user_info.get('emails', [])
-            names = user_info.get('names', [])
+            emails = [e for e in user_info.get('emails', []) if e.strip()]
+            names = [n for n in user_info.get('names', []) if n.strip()]
+
 
         singleResult = {
             'singleMode': singleMode,
